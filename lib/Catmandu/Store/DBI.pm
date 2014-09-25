@@ -18,6 +18,7 @@ has data_source => (
 has username => ( is => 'ro', default => sub { '' } );
 has password => ( is => 'ro', default => sub { '' } );
 has timeout => ( is => 'ro', default => sub { 30; } );
+has reconnect_after_timeout => (is => 'ro', default => sub { 0; });
 
 sub dbh {
     my $self = $_[0];
@@ -30,9 +31,10 @@ sub dbh {
 
         if( (time - $start_time) > $self->timeout ){
 
-            #timeout $timeout reached, trying to ping";
-            unless($dbh->ping){
+            #timeout $timeout reached => reconnecting?
+            if($self->reconnect_after_timeout || !($dbh->ping)){
                 #ping failed, so trying to reconnect";
+                $dbh->disconnect;
                 $dbh = $self->_build_dbh();
             }
             $start_time = time;
