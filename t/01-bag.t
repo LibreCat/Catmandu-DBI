@@ -13,20 +13,20 @@ my $driver_found = 1;
     eval {
         require DBD::SQLite;
     };
-    if($@){ 
+    if($@){
         $driver_found = 0;
     }
 }
-    
+
 
 if(!$driver_found){
 
-    plan skip_all => "database driver DBD::SQLite not found";   
+    plan skip_all => "database driver DBD::SQLite not found";
 
 }else{
 
     my($fh,$file);
-    lives_ok(sub { 
+    lives_ok(sub {
       ($fh,$file) = tempfile(UNLINK => 1);
     }, "database file created");
 

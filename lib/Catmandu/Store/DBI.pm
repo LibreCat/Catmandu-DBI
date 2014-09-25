@@ -17,15 +17,33 @@ has data_source => (
 
 has username => ( is => 'ro', default => sub { '' } );
 has password => ( is => 'ro', default => sub { '' } );
+has timeout => ( is => 'ro', default => sub { 30; } );
 
-has dbh => (
-    is       => 'ro',
-    init_arg => undef,
-    lazy     => 1,
-    builder  => '_build_dbh',
-);
+sub dbh {
+    my $self = $_[0];
+    state $start_time = time;
+    state $dbh = $self->_build_dbh();
+    state $driver = $dbh->{Driver}{Name} // "";
 
-# Only mysql seems to need auto_reconnect for now
+    #mysql has built-in option 'mysql_auto_reconnect'
+    if($driver !~ /mysql/i){
+
+        if( (time - $start_time) > $self->timeout ){
+
+            #timeout $timeout reached, trying to ping";
+            unless($dbh->ping){
+                #ping failed, so trying to reconnect";
+                $dbh = $self->_build_dbh();
+            }
+            $start_time = time;
+
+        }
+
+    }
+
+    $dbh;
+}
+
 sub _build_dbh {
     my $self = $_[0];
     my $opts = {
@@ -439,19 +457,19 @@ Version 0.02
 The L<catmandu> command line client can be used like this:
 
     catmandu import JSON to DBI --data_source SQLite:mydb.sqlite < data.json
-    
+
 =head1 DESCRIPTION
 
 A Catmandu::Store::DBI is a Perl package that can store data into
 DBI backed databases. The database as a whole is called a 'store'
-(L<Catmandu::Store>. Databases also have compartments (e.g. tables) 
+(L<Catmandu::Store>. Databases also have compartments (e.g. tables)
 called 'bags' (L<Catmandu::Bag>).
 
 =head1 METHODS
 
 =head2 new(data_source => $data_source)
 
-Create a new Catmandu::Store::DBI store using a DBI $data_source. The 
+Create a new Catmandu::Store::DBI store using a DBI $data_source. The
 prefix "DBI:" is added automatically if needed.
 
 =head2 bag($name)
