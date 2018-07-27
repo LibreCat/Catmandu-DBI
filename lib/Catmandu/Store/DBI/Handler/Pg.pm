@@ -21,7 +21,7 @@ sub _column_sql {
         $sql .= 'INTEGER';
     }
     elsif ($map->{type} eq 'binary') {
-        $sql .= 'BYTEA';
+        $sql .= $dbh->{pg_server_version} >= 90400 ? 'JSONB' : 'BYTEA';
     }
     elsif ($map->{type} eq 'datetime') {
         $sql .= 'TIMESTAMP(0)';
@@ -106,6 +106,7 @@ sub add_row {
     for my $map (values %$mapping) {
         $binary_cols{$map->{column}} = 1 if $map->{type} eq 'binary';
     }
+    my $binary_type = $dbh->{pg_server_version} >= 90400 ? DBD::Pg->PG_JSONB : DBD::Pg->PG_BYTEA;
     my $id     = $row->{$id_col};
     my @cols   = keys %$row;
     my @q_cols = map {$dbh->quote_identifier($_)} @cols;
@@ -130,7 +131,7 @@ sub add_row {
         my $col = $cols[$i];
         my $val = $vals[$i];
         if ($binary_cols{$col}) {
-            $sth->bind_param($i + 1, $val, {pg_type => DBD::Pg->PG_BYTEA});
+            $sth->bind_param($i + 1, $val, {pg_type => $binary_type});
         }
         else {
             $sth->bind_param($i + 1, $val);
@@ -149,7 +150,7 @@ sub add_row {
             my $val = $vals[$i];
             if ($binary_cols{$col}) {
                 $sth->bind_param($i + 1, $val,
-                    {pg_type => DBD::Pg->PG_BYTEA});
+                    {pg_type => $binary_type});
             }
             else {
                 $sth->bind_param($i + 1, $val);
