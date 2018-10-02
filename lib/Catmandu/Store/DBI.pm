@@ -21,10 +21,11 @@ has data_source => (
         $_[0]->{data_source} = $ds;
     },
 );
-has username => (is => 'ro', default => sub {''});
-has password => (is => 'ro', default => sub {''});
-has timeout => (is => 'ro', predicate => 1);
+has username                => (is => 'ro', default => sub {''});
+has password                => (is => 'ro', default => sub {''});
+has timeout                 => (is => 'ro', predicate => 1);
 has reconnect_after_timeout => (is => 'ro');
+has default_order           => (is => 'ro', default => sub {'ID'});
 has handler                 => (is => 'lazy');
 has _in_transaction         => (is => 'rw', writer => '_set_in_transaction',);
 has _connect_time           => (is => 'rw', writer => '_set_connect_time');
@@ -247,6 +248,13 @@ See TIMEOUTS below for more information.
 
 Optional. When a timeout is reached, Catmandu reconnects to the database. By
 default set to '0'
+
+=item default_order
+
+Optional. Default the default sorting of results when returning an iterator.
+Choose 'ID' to order on the configured identifier field, 'NONE' to skip all
+ordering, or "$field" where $field is the name of a table column. By default
+set to 'ID'.
 
 =back
 
