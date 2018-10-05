@@ -9,7 +9,7 @@ our $VERSION = "0.0702";
 
 with 'Catmandu::Iterable';
 
-has bag => (is => 'ro', required => 1);
+has bag   => (is => 'ro', required => 1);
 has where => (is => 'ro');
 has binds => (is => 'lazy');
 has total => (is => 'ro');
@@ -45,9 +45,24 @@ sub _select_sql {
     my $q_id_field = $self->_q_id($id_field);
     my $where      = $self->where;
     my $limit      = $self->limit;
+
     my $sql        = "SELECT * FROM " . $self->_q_id($self->bag->name);
     $sql .= " WHERE $where" if $where;
-    $sql .= " ORDER BY $q_id_field LIMIT $limit OFFSET $start";
+
+    my $default_order = $self->bag->default_order // $self->bag->store->default_order;
+
+    if (defined $default_order) {
+        if ($default_order eq 'ID') {
+            $sql .= " ORDER BY $q_id_field";
+        }
+        elsif ($default_order eq 'NONE') {
+            # no nothing
+        }
+        else {
+            $sql .= " ORDER BY $default_order";
+        }
+    }
+    $sql .= " LIMIT $limit OFFSET $start";
     $sql;
 }
 

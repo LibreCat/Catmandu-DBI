@@ -18,7 +18,8 @@ my $default_mapping = {
     _data => {column => 'data', type => 'binary', serialize => 'all',}
 };
 
-has mapping => (is => 'ro', default => sub {+{%$default_mapping}},);
+has mapping       => (is => 'ro', default => sub {+{%$default_mapping}},);
+has default_order => (is => 'ro');    
 
 has _iterator => (
     is      => 'ro',
