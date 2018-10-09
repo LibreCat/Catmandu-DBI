@@ -41,6 +41,8 @@ elsif (
 }
 else {
 
+    my $pg_version;
+
     sub get {
         my ($dbh, $table, $id_field, $id) = @_;
         my $sql
@@ -82,6 +84,9 @@ else {
         delete $expected->{data}->{_id};
 
         is_deeply($row, $expected, "no mapping - expected fields created");
+
+        #get pg version while we can
+        $pg_version = $bag->store->dbh->{pg_server_version};
     }
 
     #explicit mapping
@@ -196,6 +201,40 @@ else {
         );
         isnt($r, undef,
             "iterator - select(key => value)->first contains one record");
+
+    }
+    #test jsonb support in postgres 9.4
+    if ( $pg_version >= 90400 ) {
+
+        my $bag;
+        my $bag_name = "data4";
+        lives_ok(
+            sub {
+                $bag = Catmandu::Store::DBI->new(
+                    %store_args,
+                    bags => {
+                        $bag_name => {
+                            mapping => {
+                                _id => {
+                                    column   => "_id",
+                                    type     => "string",
+                                    index    => 1,
+                                    required => 1,
+                                    unique   => 1
+                                },
+                                _data => {
+                                    column => "data",
+                                    type => "binary",
+                                    serialize => "all",
+                                    jsonb => 1
+                                }
+                            }
+                        }
+                    }
+                )->bag($bag_name);
+            },
+            "bag $bag_name with jsonb support created"
+        );
 
     }
 
