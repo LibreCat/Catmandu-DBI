@@ -26,6 +26,7 @@ has password => (is => 'ro', default => sub {''});
 has timeout => (is => 'ro', predicate => 1);
 has reconnect_after_timeout => (is => 'ro');
 has handler                 => (is => 'lazy');
+has pg_jsonb => (is => 'ro');
 has _in_transaction         => (is => 'rw', writer => '_set_in_transaction',);
 has _connect_time           => (is => 'rw', writer => '_set_connect_time');
 has _dbh => (is => 'lazy', builder => '_build_dbh', writer => '_set_dbh',);
