@@ -22,10 +22,10 @@ sub _column_sql {
         $sql .= 'INTEGER';
     }
     elsif ($map->{type} eq 'binary') {
-        if( $bag->store->pg_jsonb && $dbh->{pg_server_version} < 90400 ) {
+        if( $map->{jsonb} && $dbh->{pg_server_version} < 90400 ) {
             Catmandu::Error->throw( "JSONB data type only supported in postgres 9.4 and above" );
         }
-        $sql .= $bag->store->pg_jsonb ? 'JSONB' : 'BYTEA';
+        $sql .= $map->{jsonb} ? 'JSONB' : 'BYTEA';
     }
     elsif ($map->{type} eq 'datetime') {
         $sql .= 'TIMESTAMP(0)';
@@ -110,10 +110,10 @@ sub add_row {
     for my $map (values %$mapping) {
         $binary_cols{$map->{column}} = 1 if $map->{type} eq 'binary';
     }
-    if( $bag->store->pg_jsonb && $dbh->{pg_server_version} < 90400 ) {
+    if( $mapping->{jsonb} && $dbh->{pg_server_version} < 90400 ) {
         Catmandu::Error->throw( "JSONB data type only supported in postgres 9.4 and above" );
     }
-    my $binary_type = $bag->store->jsonb ? DBD::Pg->PG_JSONB : DBD::Pg->PG_BYTEA;
+    my $binary_type = $mapping->{jsonb} ? DBD::Pg->PG_JSONB : DBD::Pg->PG_BYTEA;
     my $id     = $row->{$id_col};
     my @cols   = keys %$row;
     my @q_cols = map {$dbh->quote_identifier($_)} @cols;
