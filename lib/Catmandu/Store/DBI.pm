@@ -8,7 +8,7 @@ use Moo;
 use MooX::Aliases;
 use namespace::clean;
 
-our $VERSION = "0.0702";
+our $VERSION = "0.08";
 
 with 'Catmandu::Store';
 with 'Catmandu::Transactional';
