@@ -30,8 +30,8 @@ if (!$driver_found) {
 elsif (
     !(
            $ENV{CATMANDU_DBI_TEST_PG_DSN}
-        || $ENV{CATMANDU_DBI_TEST_PG_USERNAME}
-        || $ENV{CATMANDU_DBI_TEST_PG_PASSWORD}
+        // $ENV{CATMANDU_DBI_TEST_PG_USERNAME}
+        // $ENV{CATMANDU_DBI_TEST_PG_PASSWORD}
     )
     )
 {

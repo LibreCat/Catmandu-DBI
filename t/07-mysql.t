@@ -23,21 +23,17 @@ my %store_args = (
 );
 
 if (!$driver_found) {
-
     plan skip_all => "database driver DBD::mysql not found";
-
 }
 elsif (
     !(
            $ENV{CATMANDU_DBI_TEST_MYSQL_DSN}
-        || $ENV{CATMANDU_DBI_TEST_MYSQL_USERNAME}
-        || $ENV{CATMANDU_DBI_TEST_MYSQL_PASSWORD}
+        // $ENV{CATMANDU_DBI_TEST_MYSQL_USERNAME}
+        // $ENV{CATMANDU_DBI_TEST_MYSQL_PASSWORD}
     )
     )
 {
-
     plan skip_all => "not all mysql connection details are set";
-
 }
 else {
 
