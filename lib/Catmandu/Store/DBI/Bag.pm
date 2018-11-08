@@ -19,7 +19,7 @@ my $default_mapping = {
 };
 
 has mapping       => (is => 'ro', default => sub {+{%$default_mapping}},);
-has default_order => (is => 'ro');    
+has default_order => (is => 'ro');
 
 has _iterator => (
     is      => 'ro',
@@ -175,6 +175,15 @@ sub _data_to_row {
     }
 
     $row;
+}
+
+sub _quote_id {
+    $_[0]->store->dbh->quote_identifier($_[1]);
+}
+
+sub _max_limit {    # should be plenty large
+    use bigint;
+    state $max_limit = 2**63 - 1;
 }
 
 =head1 NAME

@@ -66,9 +66,9 @@ else {
         date_updated => "2017-01-01 10:00:00",
         number       => "42"
     };
-    my $serializer = Catmandu::Serializer::json->new();
+    my $serializer = Catmandu::Serializer::json->new;
 
-    #impliciet mapping (old behaviour)
+    #implicit mapping (old behaviour)
     {
         my $bag;
         my $bag_name = "data1";

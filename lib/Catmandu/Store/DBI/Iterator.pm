@@ -29,78 +29,15 @@ sub _build_limit {
     $limit;
 }
 
-sub _q_id {
-    $_[0]->bag->store->dbh->quote_identifier($_[1]);
-}
-
-sub _max_limit {    # should be plenty large
-    use bigint;
-    state $max_limit = 2**63 - 1;
-}
-
-sub _select_sql {
-    my ($self, $start) = @_;
-    my $bag        = $self->bag;
-    my $id_field   = $bag->mapping->{_id}->{column};
-    my $q_id_field = $self->_q_id($id_field);
-    my $where      = $self->where;
-    my $limit      = $self->limit;
-
-    my $sql        = "SELECT * FROM " . $self->_q_id($self->bag->name);
-    $sql .= " WHERE $where" if $where;
-
-    my $default_order = $self->bag->default_order // $self->bag->store->default_order;
-
-    if (defined $default_order) {
-        if ($default_order eq 'ID') {
-            $sql .= " ORDER BY $q_id_field";
-        }
-        elsif ($default_order eq 'NONE') {
-            # no nothing
-        }
-        else {
-            $sql .= " ORDER BY $default_order";
-        }
-    }
-    $sql .= " LIMIT $limit OFFSET $start";
-    $sql;
-}
-
-sub _count_sql {
-    my ($self) = @_;
-    my $name   = $self->bag->name;
-    my $total  = $self->total;
-    my $start  = $self->start;
-    my $where  = $self->where;
-
-    return "SELECT COUNT(*) FROM " . $self->_q_id($name)
-        unless $total || $start || $where;
-
-    my $sql = "SELECT COUNT(*) FROM (SELECT * FROM " . $self->_q_id($name);
-    if ($where) {
-        $sql .= " WHERE $where";
-    }
-    if ($total) {
-        $sql .= " LIMIT $total";
-    }
-    elsif ($start) {    # no offset without limit
-        $sql .= " LIMIT " . _max_limit;
-    }
-    if ($start) {
-        $sql .= " OFFSET $start";
-    }
-    $sql .= ") AS q";
-
-    $sql;
-}
-
 sub generator {
     my ($self) = @_;
-    my $bag    = $self->bag;
-    my $binds  = $self->binds;
-    my $total  = $self->total;
-    my $start  = $self->start;
-    my $limit  = $self->limit;
+    my $bag     = $self->bag;
+    my $handler = $bag->store->handler;
+    my $binds   = $self->binds;
+    my $total   = $self->total;
+    my $start   = $self->start;
+    my $limit   = $self->limit;
+    my $where   = $self->where;
 
     sub {
         state $rows;
@@ -111,7 +48,7 @@ sub generator {
             my $dbh = $bag->store->dbh;
 
 #DO NOT USE prepare_cached as it holds previous data in memory, leading to a memory leak!
-            my $sth = $dbh->prepare($self->_select_sql($start))
+            my $sth = $dbh->prepare($handler->select_sql($bag, $start, $limit, $where))
                 or Catmandu::Error->throw($dbh->errstr);
             $sth->execute(@$binds) or Catmandu::Error->throw($sth->errstr);
             $rows = $sth->fetchall_arrayref({});
@@ -127,9 +64,10 @@ sub generator {
 
 sub count {
     my ($self) = @_;
+    my $bag  = $self->bag;
     my $binds  = $self->binds;
-    my $dbh    = $self->bag->store->dbh;
-    my $sth    = $dbh->prepare_cached($self->_count_sql)
+    my $dbh    = $bag->store->dbh;
+    my $sth    = $dbh->prepare_cached($bag->store->handler->count_sql($bag, $self->start, $self->total, $self->where))
         or Catmandu::Error->throw($dbh->errstr);
     $sth->execute(@$binds) or Catmandu::Error->throw($sth->errstr);
     my ($n) = $sth->fetchrow_array;
@@ -200,7 +138,7 @@ sub _scope {
     my $where  = is_string($self->where) ? '(' . $self->where . ') AND ' : '';
     my $map    = $self->bag->mapping->{$arg1};
     my $column = $map->{column};
-    my $q_column = $self->_q_id($column);
+    my $q_column = $self->bag->_quote_id($column);
 
     if ($map->{array}) {
         push @$binds, is_value($arg2) ? [$arg2] : $arg2;
