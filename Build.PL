@@ -25,7 +25,8 @@ my %module_build_args = (
   "requires" => {
     "Catmandu" => "1.0",
     "DBI" => "1.630",
-    "Moo" => "1.000003",
+    "Moo" => "1.004006",
+    "MooX::Aliases" => "0.001006",
     "namespace::clean" => "0.24",
     "perl" => "v5.10.1"
   },

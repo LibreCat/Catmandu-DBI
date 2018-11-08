@@ -15,14 +15,15 @@ with 'Catmandu::Transactional';
 has data_source => (
     is       => 'ro',
     required => 1,
+    alias    => 'dsn',
     trigger  => sub {
         my $ds = $_[0]->{data_source};
         $ds = $ds =~ /^DBI:/i ? $ds : "DBI:$ds";
         $_[0]->{data_source} = $ds;
     },
 );
-has username => (is => 'ro', default => sub {''});
-has password => (is => 'ro', default => sub {''});
+has username => (is => 'ro', default => sub {''}, alias => 'user');
+has password => (is => 'ro', default => sub {''}, alias => 'pass');
 has timeout => (is => 'ro', predicate => 1);
 has reconnect_after_timeout => (is => 'ro');
 has default_order           => (is => 'ro', default => sub {'ID'});

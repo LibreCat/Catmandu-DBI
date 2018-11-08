@@ -3,14 +3,16 @@ package Catmandu::Importer::DBI;
 use Catmandu::Sane;
 use DBI;
 use Moo;
+use MooX::Aliases;
+use namespace::clean;
 
 our $VERSION = '0.0702';
 
 with 'Catmandu::Importer';
 
-has dsn => (is => 'ro', required => 1);
-has user     => (is => 'ro');
-has password => (is => 'ro');
+has data_source => (is => 'ro', required => 1, alias => 'dsn');
+has username => (is => 'ro', alias => 'user');
+has password => (is => 'ro', alias => 'pass');
 has query    => (is => 'ro', required => 1);
 has dbh =>
     (is => 'ro', init_arg => undef, lazy => 1, builder => '_build_dbh',);
