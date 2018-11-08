@@ -53,6 +53,30 @@ sub _column_sql {
     $sql;
 }
 
+# http://devoluk.com/mysql-limit-offset-performance.html
+sub select_sql {
+    my ($self, $bag, $start, $limit, $where) = @_;
+
+    my $q_id_field = $bag->_quote_id($bag->mapping->{_id}->{column});
+    my $q_table = $bag->_quote_id($bag->name);
+
+    my $sql = "SELECT * FROM $q_table AS t1";
+    $sql .= " JOIN (SELECT $q_id_field FROM $q_table";
+    $sql .= " WHERE $where" if $where;
+
+    my $default_order = $bag->default_order // $bag->store->default_order;
+
+    if (defined $default_order && $default_order eq 'ID') {
+        $sql .= " ORDER BY $q_id_field";
+    }
+    elsif (defined $default_order && $default_order ne 'NONE') {
+        $sql .= " ORDER BY $default_order";
+    }
+    $sql .= " LIMIT $limit OFFSET $start) AS t2 ON t1.$q_id_field = t2.$q_id_field";
+
+    $sql;
+}
+
 sub create_table {
     my ($self, $bag) = @_;
     my $mapping = $bag->mapping;
