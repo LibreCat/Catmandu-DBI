@@ -19,15 +19,20 @@ has sth =>
 
 sub _build_dbh {
     my $self = $_[0];
-    DBI->connect($self->dsn, $self->user, $self->password,{
+    DBI->connect(
+        $self->dsn,
+        $self->user,
+        $self->password,
+        {
             AutoCommit                       => 1,
-        RaiseError                       => 1,
-        mysql_auto_reconnect             => 1,
-        mysql_enable_utf8                => 1,
-        pg_utf8_strings                  => 1,
-        sqlite_use_immediate_transaction => 1,
-        sqlite_unicode                   => 1,
-    });
+            RaiseError                       => 1,
+            mysql_auto_reconnect             => 1,
+            mysql_enable_utf8                => 1,
+            pg_utf8_strings                  => 1,
+            sqlite_use_immediate_transaction => 1,
+            sqlite_unicode                   => 1,
+        }
+    );
 }
 
 sub _build_sth {

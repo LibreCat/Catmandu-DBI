@@ -27,7 +27,7 @@ if (!$driver_found) {
 }
 elsif (
     !(
-           $ENV{CATMANDU_DBI_TEST_MYSQL_DSN}
+        $ENV{CATMANDU_DBI_TEST_MYSQL_DSN}
         // $ENV{CATMANDU_DBI_TEST_MYSQL_USERNAME}
         // $ENV{CATMANDU_DBI_TEST_MYSQL_PASSWORD}
     )

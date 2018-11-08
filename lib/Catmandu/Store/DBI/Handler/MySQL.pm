@@ -58,7 +58,7 @@ sub select_sql {
     my ($self, $bag, $start, $limit, $where) = @_;
 
     my $q_id_field = $bag->_quote_id($bag->mapping->{_id}->{column});
-    my $q_table = $bag->_quote_id($bag->name);
+    my $q_table    = $bag->_quote_id($bag->name);
 
     my $sql = "SELECT * FROM $q_table AS t1";
     $sql .= " JOIN (SELECT $q_id_field FROM $q_table";
@@ -72,7 +72,8 @@ sub select_sql {
     elsif (defined $default_order && $default_order ne 'NONE') {
         $sql .= " ORDER BY $default_order";
     }
-    $sql .= " LIMIT $limit OFFSET $start) AS t2 ON t1.$q_id_field = t2.$q_id_field";
+    $sql
+        .= " LIMIT $limit OFFSET $start) AS t2 ON t1.$q_id_field = t2.$q_id_field";
 
     $sql;
 }
