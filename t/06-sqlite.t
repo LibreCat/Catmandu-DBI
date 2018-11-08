@@ -42,7 +42,7 @@ else {
     };
     my $serializer = Catmandu::Serializer::json->new();
 
-#impliciet mapping (old behaviour) => except for the _id that is not stored anymore in 'data'
+#implicit mapping (old behaviour) => except for the _id that is not stored anymore in 'data'
     {
         my $bag;
         lives_ok(

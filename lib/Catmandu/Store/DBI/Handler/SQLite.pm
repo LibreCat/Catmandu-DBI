@@ -22,11 +22,8 @@ sub _column_sql {
     elsif ($map->{type} eq 'binary') {
         $sql .= 'BLOB';
     }
-    elsif ($map->{type} eq 'datetime') {
-        $sql .= 'TEXT';
-    }
-    elsif ($map->{type} eq 'datetime_milli') {
-        $sql .= 'TEXT';
+    else {
+        Catmandu::Error->throw("Unknown type '$map->{type}'");
     }
     if ($map->{unique}) {
         $sql .= " UNIQUE";

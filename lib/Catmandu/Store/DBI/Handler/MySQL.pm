@@ -31,10 +31,13 @@ sub _column_sql {
     }
     elsif ($map->{type} eq 'datetime_milli') {
         if ($dbh->{mysql_clientversion} < 50640) {
-            Catmandu::NotImplemented->throw(
-                "DATETIME(3) only for MySQL > 5.6.4");
+            Catmandu::Error->throw(
+                "DATETIME(3) type only supported in MySQL 5.6.4 and above");
         }
         $sql .= 'DATETIME(3)';
+    }
+    else {
+        Catmandu::Error->throw("Unknown type '$map->{type}'");
     }
     if ($map->{unique}) {
         $sql .= " UNIQUE";

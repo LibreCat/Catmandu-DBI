@@ -23,11 +23,21 @@ sub _column_sql {
     elsif ($map->{type} eq 'binary') {
         $sql .= 'BYTEA';
     }
+    elsif ($map->{type} eq 'json') {
+        if ($dbh->{pg_server_version} < 90400) {
+            Catmandu::Error->throw(
+                "JSONB type only supported in PostgreSQL 9.4 and above");
+        }
+        $sql .= 'JSONB';
+    }
     elsif ($map->{type} eq 'datetime') {
         $sql .= 'TIMESTAMP(0)';
     }
     elsif ($map->{type} eq 'datetime_milli') {
         $sql .= 'TIMESTAMP(3)';
+    }
+    else {
+        Catmandu::Error->throw("Unknown type '$map->{type}'");
     }
     if ($map->{array}) {
         $sql .= '[]';
@@ -103,8 +113,15 @@ sub add_row {
     my $id_col   = $mapping->{_id}{column};
     my $q_id_col = $dbh->quote_identifier($id_col);
     my %binary_cols;
+    my %json_cols;
     for my $map (values %$mapping) {
-        $binary_cols{$map->{column}} = 1 if $map->{type} eq 'binary';
+
+        if ($map->{type} eq 'binary') {
+            $binary_cols{$map->{column}} = 1;
+        }
+        elsif ($map->{type} eq 'json') {
+            $json_cols{$map->{column}} = 1;
+        }
     }
     my $id     = $row->{$id_col};
     my @cols   = keys %$row;
@@ -132,6 +149,9 @@ sub add_row {
         if ($binary_cols{$col}) {
             $sth->bind_param($i + 1, $val, {pg_type => DBD::Pg->PG_BYTEA});
         }
+        elsif ($json_cols{$col}) {
+            $sth->bind_param($i + 1, $val, {pg_type => DBD::Pg->PG_JSONB});
+        }
         else {
             $sth->bind_param($i + 1, $val);
         }
@@ -150,6 +170,10 @@ sub add_row {
             if ($binary_cols{$col}) {
                 $sth->bind_param($i + 1, $val,
                     {pg_type => DBD::Pg->PG_BYTEA});
+            }
+            elsif ($json_cols{$col}) {
+                $sth->bind_param($i + 1, $val,
+                    {pg_type => DBD::Pg->PG_JSONB});
             }
             else {
                 $sth->bind_param($i + 1, $val);

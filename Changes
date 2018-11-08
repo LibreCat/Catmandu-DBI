@@ -2,6 +2,8 @@ Revision history for Catmandu-DBI
 
 {{$NEXT}}
   - optimize mysql select with large offsets
+  - fix Catmandu::Importer::DBI utf-8 handling
+  - The Pg handler now supports the jsonb type
 
 0.0702  2018-04-10 11:30:09 CEST
   - document index option

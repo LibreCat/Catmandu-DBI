@@ -5,6 +5,7 @@ use Catmandu::Util qw(require_package);
 use DBI;
 use Catmandu::Store::DBI::Bag;
 use Moo;
+use MooX::Aliases;
 use namespace::clean;
 
 our $VERSION = "0.0702";
@@ -303,6 +304,18 @@ See L<Catmandu::Store::DBI::Bag> for more information.
 
 =item binary
 
+=item datetime
+
+Only MySQL, PostgreSQL
+
+=item datetime_milli
+
+Only MySQL, PostgreSQL
+
+=item json
+
+Only PostgreSQL
+
 =back
 
 =head2 Column options
@@ -315,7 +328,7 @@ Name of the table column if it differs from the key in your data.
 
 =item array
 
-Boolean option, default is C<0>. Note that this options is only supported for PostgreSQL.
+Boolean option, default is C<0>. Note that this is only supported for PostgreSQL.
 
 =item unique
 

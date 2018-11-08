@@ -57,9 +57,11 @@ else {
         title  => "My little pony",
         author => "孩之寶"
     };
-    my $serializer = Catmandu::Serializer::json->new();
+    my $serializer = Catmandu::Serializer::json->new;
 
-    #impliciet mapping (old behaviour)
+    my $pg_version;
+
+    #implicit mapping (old behaviour)
     {
         my $bag;
         my $bag_name = "data1";
@@ -69,6 +71,9 @@ else {
             },
             "no mapping - bag $bag_name created"
         );
+
+        $pg_version = $bag->store->dbh->{pg_server_version};
+
         lives_ok(sub {$bag->delete_all;},
             "no mapping - bag $bag_name cleared");
 
@@ -198,5 +203,38 @@ else {
 
     }
 
-    done_testing 19;
+    #test jsonb support in postgres 9.4 and above
+    if ($pg_version >= 90400) {
+        my $bag;
+        my $bag_name = "data4";
+        lives_ok(
+            sub {
+                $bag = Catmandu::Store::DBI->new(
+                    %store_args,
+                    bags => {
+                        $bag_name => {
+                            mapping => {
+                                _id => {
+                                    column   => "_id",
+                                    type     => "string",
+                                    index    => 1,
+                                    required => 1,
+                                    unique   => 1
+                                },
+                                _data => {
+                                    column    => "data",
+                                    type      => "json",
+                                    serialize => "all",
+                                    jsonb     => 1
+                                }
+                            }
+                        }
+                    }
+                )->bag($bag_name);
+            },
+            "bag $bag_name with jsonb support created"
+        );
+    }
+
+    done_testing;
 }
