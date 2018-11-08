@@ -142,7 +142,7 @@ __END__
 
 =head1 NAME
 
-Catmandu::Store::DBI - A Catmandu::Store plugin for DBI based interfaces
+Catmandu::Store::DBI - A Catmandu::Store backed by DBI
 
 =head1 VERSION
 
@@ -208,6 +208,11 @@ create them automatically. See  "DATABASE CONFIGURATION" below.
 
 DO NOT USE Catmandu::Store::DBI on an existing database! Tables and
 data can be deleted and changed.
+
+=head1 LIMITATIONS
+
+Currently only MySQL, Postgres and SQLite are supported. Text columns are also
+assumed to be utf-8.
 
 =head1 CONFIGURATION
 

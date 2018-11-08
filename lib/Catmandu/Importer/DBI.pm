@@ -60,6 +60,10 @@ sub DESTROY {
 
 Catmandu::Importer::DBI - Catmandu module to import data from any DBI source
 
+=head1 LIMITATIONS
+
+Text columns are assumed to be utf-8.
+
 =head1 SYNOPSIS
 
  # From the command line 
