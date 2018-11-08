@@ -85,7 +85,7 @@ else {
                                     {column => "title", type => "string"},
                                 author =>
                                     {column => "author", type => "string"}
-                            } ,
+                            },
                             default_order => 'ID'
                         }
                     }

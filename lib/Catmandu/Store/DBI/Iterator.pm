@@ -9,7 +9,7 @@ our $VERSION = "0.0702";
 
 with 'Catmandu::Iterable';
 
-has bag   => (is => 'ro', required => 1);
+has bag => (is => 'ro', required => 1);
 has where => (is => 'ro');
 has binds => (is => 'lazy');
 has total => (is => 'ro');
@@ -30,7 +30,7 @@ sub _build_limit {
 }
 
 sub generator {
-    my ($self) = @_;
+    my ($self)  = @_;
     my $bag     = $self->bag;
     my $handler = $bag->store->handler;
     my $binds   = $self->binds;
@@ -48,7 +48,9 @@ sub generator {
             my $dbh = $bag->store->dbh;
 
 #DO NOT USE prepare_cached as it holds previous data in memory, leading to a memory leak!
-            my $sth = $dbh->prepare($handler->select_sql($bag, $start, $limit, $where))
+            my $sth
+                = $dbh->prepare(
+                $handler->select_sql($bag, $start, $limit, $where))
                 or Catmandu::Error->throw($dbh->errstr);
             $sth->execute(@$binds) or Catmandu::Error->throw($sth->errstr);
             $rows = $sth->fetchall_arrayref({});
@@ -64,11 +66,14 @@ sub generator {
 
 sub count {
     my ($self) = @_;
-    my $bag  = $self->bag;
+    my $bag    = $self->bag;
     my $binds  = $self->binds;
     my $dbh    = $bag->store->dbh;
-    my $sth    = $dbh->prepare_cached($bag->store->handler->count_sql($bag, $self->start, $self->total, $self->where))
-        or Catmandu::Error->throw($dbh->errstr);
+    my $sth    = $dbh->prepare_cached(
+        $bag->store->handler->count_sql(
+            $bag, $self->start, $self->total, $self->where
+        )
+    ) or Catmandu::Error->throw($dbh->errstr);
     $sth->execute(@$binds) or Catmandu::Error->throw($sth->errstr);
     my ($n) = $sth->fetchrow_array;
     $sth->finish;

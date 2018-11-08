@@ -14,7 +14,7 @@ sub select_sql {
     my $id_field   = $bag->mapping->{_id}->{column};
     my $q_id_field = $bag->_quote_id($id_field);
 
-    my $sql        = "SELECT * FROM " . $bag->_quote_id($bag->name);
+    my $sql = "SELECT * FROM " . $bag->_quote_id($bag->name);
     $sql .= " WHERE $where" if $where;
 
     my $default_order = $bag->default_order // $bag->store->default_order;
@@ -24,6 +24,7 @@ sub select_sql {
             $sql .= " ORDER BY $q_id_field";
         }
         elsif ($default_order eq 'NONE') {
+
             # no nothing
         }
         else {
@@ -36,7 +37,7 @@ sub select_sql {
 
 sub count_sql {
     my ($self, $bag, $start, $total, $where) = @_;
-    my $name   = $bag->name;
+    my $name = $bag->name;
 
     return "SELECT COUNT(*) FROM " . $bag->_quote_id($name)
         unless $total || $start || $where;

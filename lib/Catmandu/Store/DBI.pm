@@ -21,14 +21,14 @@ has data_source => (
         $_[0]->{data_source} = $ds;
     },
 );
-has username                => (is => 'ro', default => sub {''});
-has password                => (is => 'ro', default => sub {''});
-has timeout                 => (is => 'ro', predicate => 1);
+has username => (is => 'ro', default => sub {''});
+has password => (is => 'ro', default => sub {''});
+has timeout => (is => 'ro', predicate => 1);
 has reconnect_after_timeout => (is => 'ro');
 has default_order           => (is => 'ro', default => sub {'ID'});
 has handler                 => (is => 'lazy');
-has _in_transaction         => (is => 'rw', writer => '_set_in_transaction',);
-has _connect_time           => (is => 'rw', writer => '_set_connect_time');
+has _in_transaction => (is => 'rw', writer => '_set_in_transaction',);
+has _connect_time   => (is => 'rw', writer => '_set_connect_time');
 has _dbh => (is => 'lazy', builder => '_build_dbh', writer => '_set_dbh',);
 
 sub handler_namespace {
