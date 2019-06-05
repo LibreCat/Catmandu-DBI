@@ -1,6 +1,7 @@
 Revision history for Catmandu-DBI
 
 {{$NEXT}}
+  - lazily create tables
 
 0.08  2018-11-08 14:28:34 CET
   - optimize mysql select with large offsets

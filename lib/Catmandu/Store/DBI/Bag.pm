@@ -37,15 +37,14 @@ has _iterator => (
     ],
 );
 
+has store_with_table => (is => 'lazy');
+
 with 'Catmandu::Bag';
 with 'Catmandu::Serializer';
 
 sub BUILD {
     my ($self) = @_;
     $self->_normalize_mapping;
-
-    # TODO should happen lazily;
-    $self->store->handler->create_table($self);
 }
 
 sub _normalize_mapping {
@@ -68,9 +67,16 @@ sub _build_iterator {
     Catmandu::Store::DBI::Iterator->new(bag => $self);
 }
 
+sub _build_store_with_table {
+    my ($self) = @_;
+    my $store = $self->store;
+    $store->handler->create_table($self);
+    $store;
+}
+
 sub get {
     my ($self, $id) = @_;
-    my $store      = $self->store;
+    my $store      = $self->store_with_table;
     my $dbh        = $store->dbh;
     my $q_name     = $dbh->quote_identifier($self->name);
     my $q_id_field = $dbh->quote_identifier($self->mapping->{_id}->{column});
@@ -86,13 +92,13 @@ sub get {
 
 sub add {
     my ($self, $data) = @_;
-    $self->store->handler->add_row($self, $self->_data_to_row($data));
+    $self->store_with_table->handler->add_row($self, $self->_data_to_row($data));
     $data;
 }
 
 sub delete {
     my ($self, $id) = @_;
-    my $store      = $self->store;
+    my $store      = $self->store_with_table;
     my $dbh        = $store->dbh;
     my $q_name     = $dbh->quote_identifier($self->name);
     my $q_id_field = $dbh->quote_identifier($self->mapping->{_id}->{column});
@@ -105,7 +111,7 @@ sub delete {
 
 sub delete_all {
     my ($self) = @_;
-    my $store  = $self->store;
+    my $store  = $self->store_with_table;
     my $dbh    = $store->dbh;
     my $q_name = $dbh->quote_identifier($self->name);
     my $sth    = $dbh->prepare_cached("DELETE FROM ${q_name}")
@@ -284,6 +290,10 @@ Catmandu::Store::DBI::Bag provides some method overrides specific for DBI interf
 to make querying more efficient.
 
 =head1 METHODS
+
+=head2 store_with_table
+
+Equivalent to the C<store> accessor, but ensures that the table for this bag exists.
 
 =head2 select($key => $val)
 

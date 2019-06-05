@@ -32,7 +32,8 @@ sub _build_limit {
 sub generator {
     my ($self)  = @_;
     my $bag     = $self->bag;
-    my $handler = $bag->store->handler;
+    my $store   = $self->bag->store_with_table;
+    my $handler = $store->handler;
     my $binds   = $self->binds;
     my $total   = $self->total;
     my $start   = $self->start;
@@ -45,7 +46,7 @@ sub generator {
         return if defined $total && !$total;
 
         unless (defined $rows && @$rows) {
-            my $dbh = $bag->store->dbh;
+            my $dbh = $store->dbh;
 
 #DO NOT USE prepare_cached as it holds previous data in memory, leading to a memory leak!
             my $sth
@@ -68,9 +69,10 @@ sub count {
     my ($self) = @_;
     my $bag    = $self->bag;
     my $binds  = $self->binds;
-    my $dbh    = $bag->store->dbh;
+    my $store  = $bag->store_with_table;
+    my $dbh    = $store->dbh;
     my $sth    = $dbh->prepare_cached(
-        $bag->store->handler->count_sql(
+        $store->handler->count_sql(
             $bag, $self->start, $self->total, $self->where
         )
     ) or Catmandu::Error->throw($dbh->errstr);
