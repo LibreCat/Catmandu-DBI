@@ -43,7 +43,7 @@ else {
                 data_source             => "dbi:SQLite:dbname=$file",
                 timeout                 => $timeout,
                 reconnect_after_timeout => 1
-                )->bag()
+            )->bag();
 
         },
         "bag created"

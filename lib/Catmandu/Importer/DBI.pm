@@ -49,7 +49,7 @@ sub generator {
 
     return sub {
         $self->sth->fetchrow_hashref();
-        }
+    }
 }
 
 sub DESTROY {

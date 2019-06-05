@@ -9,7 +9,7 @@ our $VERSION = "0.08";
 
 with 'Catmandu::Iterable';
 
-has bag => (is => 'ro', required => 1);
+has bag   => (is => 'ro', required => 1);
 has where => (is => 'ro');
 has binds => (is => 'lazy');
 has total => (is => 'ro');

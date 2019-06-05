@@ -18,7 +18,7 @@ my $default_mapping = {
     _data => {column => 'data', type => 'binary', serialize => 'all',}
 };
 
-has mapping => (is => 'ro', default => sub {+{%$default_mapping}},);
+has mapping       => (is => 'ro', default => sub {+{%$default_mapping}},);
 has default_order => (is => 'ro');
 
 has _iterator => (
@@ -92,7 +92,8 @@ sub get {
 
 sub add {
     my ($self, $data) = @_;
-    $self->store_with_table->handler->add_row($self, $self->_data_to_row($data));
+    $self->store_with_table->handler->add_row($self,
+        $self->_data_to_row($data));
     $data;
 }
 
