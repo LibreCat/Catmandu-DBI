@@ -1,6 +1,8 @@
 Revision history for Catmandu-DBI
 
 {{$NEXT}}
+
+0.08_01  2019-06-05 11:14:40 CEST
   - lazily create tables
 
 0.08  2018-11-08 14:28:34 CET
