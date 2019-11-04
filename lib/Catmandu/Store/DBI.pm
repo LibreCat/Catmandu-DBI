@@ -316,6 +316,21 @@ Only MySQL, PostgreSQL
 
 Only PostgreSQL
 
+This is mapped internally to postgres field of type "jsonb".
+
+Please use the serializer L<Catmandu::Serializer::json_string>,
+
+if you choose to store the perl data structure into this type of field.
+
+Reasons:
+
+* there are several types of serializers. E.g. serializer "messagepack"
+  produces a string that is not accepted by a jsonb field in postgres
+
+* the default serializer L<Catmandu::Serializer::json> converts the perl data structure to a binary json string,
+  and the DBI client reencodes that utf8 string (because jsonb is a sort of text field),
+  so you end up having a double encoded string.
+
 =back
 
 =head2 Column options
