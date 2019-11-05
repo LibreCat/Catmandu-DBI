@@ -6,7 +6,7 @@ perl:
   - "5.14"
   - "5.12"
   - "5.10"
-pre_install:
+before_install:
   - sudo apt-get -y install make gcc
 install:
   - cpanm --quiet --installdeps --notest --force --skip-satisfied .
