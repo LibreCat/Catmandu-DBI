@@ -9,9 +9,9 @@ perl:
 before_install:
   - sudo apt-get -y install make gcc
 install:
-  - cpanm --quiet --installdeps --notest --force --skip-satisfied .
   - cpanm --quiet --notest --skip-satisfied Devel::Cover
   - cpanm --quiet --notest --skip-satisfied Module::Build
+  - cpanm --quiet --installdeps --notest --force --skip-satisfied .
 script:
   - perl Build.PL && ./Build build && cover -test
 after_success:
