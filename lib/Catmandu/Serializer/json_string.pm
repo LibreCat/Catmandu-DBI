@@ -5,18 +5,18 @@ use JSON qw();
 use Moo;
 
 has json => (
-    is => "ro",
-    lazy => 1,
+    is       => "ro",
+    lazy     => 1,
     init_arg => undef,
-    default => sub { JSON->new()->utf8(0); }
+    default  => sub {JSON->new()->utf8(0);}
 );
 
 sub serialize {
-    $_[0]->json()->encode( $_[1] );
+    $_[0]->json()->encode($_[1]);
 }
 
 sub deserialize {
-    $_[0]->json()->decode( $_[1] );
+    $_[0]->json()->decode($_[1]);
 }
 
 1;
