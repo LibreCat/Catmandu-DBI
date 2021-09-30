@@ -6,6 +6,7 @@ use DBI;
 use Catmandu::Store::DBI::Bag;
 use Moo;
 use MooX::Aliases;
+use Catmandu::Error;
 use namespace::clean;
 
 our $VERSION = "0.09";
@@ -25,12 +26,9 @@ has data_source => (
 );
 has username => (is => 'ro', default => sub {''}, alias => 'user');
 has password => (is => 'ro', default => sub {''}, alias => 'pass');
-has timeout                 => (is => 'ro', predicate => 1);
-has reconnect_after_timeout => (is => 'ro');
 has default_order           => (is => 'ro', default => sub {'ID'});
 has handler                 => (is => 'lazy');
 has _in_transaction         => (is => 'rw', writer => '_set_in_transaction',);
-has _connect_time           => (is => 'rw', writer => '_set_connect_time');
 has _dbh => (is => 'lazy', builder => '_build_dbh', writer => '_set_dbh',);
 
 sub handler_namespace {
@@ -72,34 +70,53 @@ sub _build_dbh {
     my $dbh
         = DBI->connect($self->data_source, $self->username, $self->password,
         $opts,);
-    $self->_set_connect_time(time);
     $dbh;
 }
 
 sub dbh {
-    my ($self)       = @_;
-    my $dbh          = $self->_dbh;
-    my $connect_time = $self->_connect_time;
-    my $driver = $dbh->{Driver}{Name} // '';
 
-    # MySQL has builtin option mysql_auto_reconnect
-    if (   $driver !~ /mysql/i
-        && $self->has_timeout
-        && time - $connect_time > $self->timeout)
-    {
-        if ($self->reconnect_after_timeout || !$dbh->ping) {
+    my $self = $_[0];
+    my $dbh  = $self->_dbh;
 
-            # ping failed, so try to reconnect
-            $dbh->disconnect;
-            $dbh = $self->_build_dbh;
-            $self->_set_dbh($dbh);
-        }
-        else {
-            $self->_set_connect_time(time);
-        }
+    # reconnect when dbh is not set (should never happen)
+    return $self->reconnect
+        unless defined $dbh;
+
+    # check validity of dbh
+    # for performance reasons only check every second
+    if ( defined( $self->{last_ping_t} ) ) {
+
+        return $dbh if (time - $self->{last_ping_t}) < 1;
+        $self->{last_ping_t} = time;
+        return $dbh if $dbh->ping;
+
+    }
+    else {
+
+        $self->{last_ping_t} = time;
+        return $dbh if $dbh->ping;
+
     }
 
-    $dbh;
+    # one should never reconnect to a database during a transaction
+    # because that would initiate a new transaction
+    Catmandu::Error->throw("Connection to DBI backend lost, and cannot reconnect during a transaction")
+        unless $dbh->{AutoCommit};
+
+    # reconnect and return dbh
+    # note: mysql_auto_reconnect only works when AutoCommit is 1
+    $self->reconnect;
+
+}
+
+sub reconnect {
+
+    my $self = $_[0];
+    my $dbh  = $self->_dbh;
+    $dbh->disconnect if defined($dbh);
+    $self->_set_dbh($self->_build_dbh);
+    $self->_dbh;
+
 }
 
 sub transaction {
@@ -244,17 +261,6 @@ Optional. A user name to connect to the database
 =item password
 
 Optional. A password for connecting to the database
-
-=item timeout
-
-Optional. Timeout for a inactive database handle. When timeout is reached, Catmandu
-checks if the connection is still alive (by use of ping) or it recreates the connection.
-See TIMEOUTS below for more information.
-
-=item reconnect_after_timeout
-
-Optional. When a timeout is reached, Catmandu reconnects to the database. By
-default set to '0'
 
 =item default_order
 
