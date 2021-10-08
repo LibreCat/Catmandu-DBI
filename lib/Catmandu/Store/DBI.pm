@@ -31,6 +31,20 @@ has handler                 => (is => 'lazy');
 has _in_transaction         => (is => 'rw', writer => '_set_in_transaction',);
 has _dbh => (is => 'lazy', builder => '_build_dbh', writer => '_set_dbh',);
 
+# DEPRECATED methods. Were only invented to tackle of problem of reconnection
+sub timeout {
+    warn "method timeout has been replaced by auto reconnect";
+}
+
+sub has_timeout {
+    warn "method has_timeout has been replaced by auto reconnect";
+    0;
+}
+
+sub reconnect_after_timeout {
+    warn "method reconnect_after_timeout has been replaced by auto reconnect";
+}
+
 sub handler_namespace {
     'Catmandu::Store::DBI::Handler';
 }
