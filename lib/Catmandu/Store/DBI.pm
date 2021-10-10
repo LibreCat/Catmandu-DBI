@@ -101,16 +101,11 @@ sub dbh {
     if ( defined( $self->{last_ping_t} ) ) {
 
         return $dbh if (time - $self->{last_ping_t}) < 1;
-        $self->{last_ping_t} = time;
-        return $dbh if $dbh->ping;
 
     }
-    else {
 
-        $self->{last_ping_t} = time;
-        return $dbh if $dbh->ping;
-
-    }
+    $self->{last_ping_t} = time;
+    return $dbh if $dbh->ping;
 
     # one should never reconnect to a database during a transaction
     # because that would initiate a new transaction
