@@ -379,29 +379,42 @@ Boolean option, default is C<0>.
 
 =back
 
-=head1 TIMEOUT
+=head1 AUTO RECONNECT
 
-It is a good practice to set the timeout high enough. When using transactions, one should avoid this situation:
+This library automatically connects to the underlying
 
-    $bag->store->transaction(sub{
-        $bag->add({ _id => "1" });
-        sleep $timeout;
-        $bag->add({ _id => "2" });
-    });
+database, and reconnects when that connection is lost.
 
-The following warning appears:
+There is one exception though: when the connection is lost
 
-    commit ineffective with AutoCommit enabled at lib//Catmandu/Store/DBI.pm line 73.
-    DBD::SQLite::db commit failed: attempt to commit on inactive database handle
+in the middle of a transaction, this is skipped and
 
-This has the following reasons:
+a L<Catmandu::Error> is thrown. Reconnecting during a
 
-    1.  first record added
-    2.  timeout is reached, the connection is recreated
-    3.  the option AutoCommit is set. So the database handle commits the current transaction. The first record is committed.
-    4.  this new connection handle is used now. We're still in the method "transaction", but there is no longer a real transaction at database level.
-    5.  second record is added (committed)
-    6.  commit is issued. But this unnecessary, so the database handle throws a warning.
+transaction would have returned a new transaction,
+
+and (probably?) committed the lost transaction
+
+contrary to your expectation. There is actually no way to
+
+recover from that, so throwing an error seemed
+
+liked to a "good" way to solve that.
+
+
+In order to avoid this situation, try to avoid
+
+a big time lap between database actions during
+
+a transaction, as your server may have thrown
+
+you out.
+
+P.S. the mysql option C<< mysql_auto_reconnect >>
+
+does NOT automatically reconnect during a transaction
+
+exactly for this reason.
 
 =head1 SEE ALSO
 
