@@ -6,7 +6,7 @@ use Moo;
 use MooX::Aliases;
 use namespace::clean;
 
-our $VERSION = '0.10';
+our $VERSION = '0.10.1';
 
 with 'Catmandu::Importer';
 
