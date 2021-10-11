@@ -6,6 +6,7 @@ use DBI;
 use Catmandu::Store::DBI::Bag;
 use Moo;
 use MooX::Aliases;
+use Catmandu::Error;
 use namespace::clean;
 
 our $VERSION = "0.10";
@@ -25,13 +26,24 @@ has data_source => (
 );
 has username => (is => 'ro', default => sub {''}, alias => 'user');
 has password => (is => 'ro', default => sub {''}, alias => 'pass');
-has timeout                 => (is => 'ro', predicate => 1);
-has reconnect_after_timeout => (is => 'ro');
 has default_order           => (is => 'ro', default => sub {'ID'});
 has handler                 => (is => 'lazy');
 has _in_transaction         => (is => 'rw', writer => '_set_in_transaction',);
-has _connect_time           => (is => 'rw', writer => '_set_connect_time');
 has _dbh => (is => 'lazy', builder => '_build_dbh', writer => '_set_dbh',);
+
+# DEPRECATED methods. Were only invented to tackle of problem of reconnection
+sub timeout {
+    warn "method timeout has been replaced by auto reconnect";
+}
+
+sub has_timeout {
+    warn "method has_timeout has been replaced by auto reconnect";
+    0;
+}
+
+sub reconnect_after_timeout {
+    warn "method reconnect_after_timeout has been replaced by auto reconnect";
+}
 
 sub handler_namespace {
     'Catmandu::Store::DBI::Handler';
@@ -72,34 +84,48 @@ sub _build_dbh {
     my $dbh
         = DBI->connect($self->data_source, $self->username, $self->password,
         $opts,);
-    $self->_set_connect_time(time);
     $dbh;
 }
 
 sub dbh {
-    my ($self)       = @_;
-    my $dbh          = $self->_dbh;
-    my $connect_time = $self->_connect_time;
-    my $driver       = $dbh->{Driver}{Name} // '';
 
-    # MySQL has builtin option mysql_auto_reconnect
-    if (   $driver !~ /mysql/i
-        && $self->has_timeout
-        && time - $connect_time > $self->timeout)
-    {
-        if ($self->reconnect_after_timeout || !$dbh->ping) {
+    my $self = $_[0];
+    my $dbh  = $self->_dbh;
 
-            # ping failed, so try to reconnect
-            $dbh->disconnect;
-            $dbh = $self->_build_dbh;
-            $self->_set_dbh($dbh);
-        }
-        else {
-            $self->_set_connect_time(time);
-        }
+    # reconnect when dbh is not set (should never happen)
+    return $self->reconnect
+        unless defined $dbh;
+
+    # check validity of dbh
+    # for performance reasons only check every second
+    if ( defined( $self->{last_ping_t} ) ) {
+
+        return $dbh if (time - $self->{last_ping_t}) < 1;
+
     }
 
-    $dbh;
+    $self->{last_ping_t} = time;
+    return $dbh if $dbh->ping;
+
+    # one should never reconnect to a database during a transaction
+    # because that would initiate a new transaction
+    Catmandu::Error->throw("Connection to DBI backend lost, and cannot reconnect during a transaction")
+        unless $dbh->{AutoCommit};
+
+    # reconnect and return dbh
+    # note: mysql_auto_reconnect only works when AutoCommit is 1
+    $self->reconnect;
+
+}
+
+sub reconnect {
+
+    my $self = $_[0];
+    my $dbh  = $self->_dbh;
+    $dbh->disconnect if defined($dbh);
+    $self->_set_dbh($self->_build_dbh);
+    $self->_dbh;
+
 }
 
 sub transaction {
@@ -245,17 +271,6 @@ Optional. A user name to connect to the database
 
 Optional. A password for connecting to the database
 
-=item timeout
-
-Optional. Timeout for a inactive database handle. When timeout is reached, Catmandu
-checks if the connection is still alive (by use of ping) or it recreates the connection.
-See TIMEOUTS below for more information.
-
-=item reconnect_after_timeout
-
-Optional. When a timeout is reached, Catmandu reconnects to the database. By
-default set to '0'
-
 =item default_order
 
 Optional. Default the default sorting of results when returning an iterator.
@@ -359,29 +374,42 @@ Boolean option, default is C<0>.
 
 =back
 
-=head1 TIMEOUT
+=head1 AUTO RECONNECT
 
-It is a good practice to set the timeout high enough. When using transactions, one should avoid this situation:
+This library automatically connects to the underlying
 
-    $bag->store->transaction(sub{
-        $bag->add({ _id => "1" });
-        sleep $timeout;
-        $bag->add({ _id => "2" });
-    });
+database, and reconnects when that connection is lost.
 
-The following warning appears:
+There is one exception though: when the connection is lost
 
-    commit ineffective with AutoCommit enabled at lib//Catmandu/Store/DBI.pm line 73.
-    DBD::SQLite::db commit failed: attempt to commit on inactive database handle
+in the middle of a transaction, this is skipped and
 
-This has the following reasons:
+a L<Catmandu::Error> is thrown. Reconnecting during a
 
-    1.  first record added
-    2.  timeout is reached, the connection is recreated
-    3.  the option AutoCommit is set. So the database handle commits the current transaction. The first record is committed.
-    4.  this new connection handle is used now. We're still in the method "transaction", but there is no longer a real transaction at database level.
-    5.  second record is added (committed)
-    6.  commit is issued. But this unnecessary, so the database handle throws a warning.
+transaction would have returned a new transaction,
+
+and (probably?) committed the lost transaction
+
+contrary to your expectation. There is actually no way to
+
+recover from that, so throwing an error seemed
+
+liked to a "good" way to solve that.
+
+
+In order to avoid this situation, try to avoid
+
+a big time lap between database actions during
+
+a transaction, as your server may have thrown
+
+you out.
+
+P.S. the mysql option C<< mysql_auto_reconnect >>
+
+does NOT automatically reconnect during a transaction
+
+exactly for this reason.
 
 =head1 SEE ALSO
 
