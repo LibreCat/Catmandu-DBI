@@ -1,6 +1,8 @@
 Revision history for Catmandu-DBI
 
 {{$NEXT}}
+
+0.10  2021-10-11 09:17:28 CEST
   - auto reconnect
 
 0.09  2019-06-05 11:39:38 CEST
