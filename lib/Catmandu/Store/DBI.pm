@@ -80,7 +80,7 @@ sub dbh {
     my ($self)       = @_;
     my $dbh          = $self->_dbh;
     my $connect_time = $self->_connect_time;
-    my $driver = $dbh->{Driver}{Name} // '';
+    my $driver       = $dbh->{Driver}{Name} // '';
 
     # MySQL has builtin option mysql_auto_reconnect
     if (   $driver !~ /mysql/i

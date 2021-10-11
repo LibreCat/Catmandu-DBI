@@ -40,9 +40,9 @@ Catmandu::DBI - Catmandu tools to communicate with DBI based interfaces
 
 # MODULES
 
-[Catmandu::Importer::DBI](https://metacpan.org/pod/Catmandu::Importer::DBI)
+[Catmandu::Importer::DBI](https://metacpan.org/pod/Catmandu%3A%3AImporter%3A%3ADBI)
 
-[Catmandu::Store::DBI](https://metacpan.org/pod/Catmandu::Store::DBI)
+[Catmandu::Store::DBI](https://metacpan.org/pod/Catmandu%3A%3AStore%3A%3ADBI)
 
 # AUTHORS
 
@@ -56,4 +56,4 @@ Nicolas Steenlant `<nicolas.steenlant at ugent.be>`
 
 # SEE ALSO
 
-[Catmandu](https://metacpan.org/pod/Catmandu), [Catmandu::Importer](https://metacpan.org/pod/Catmandu::Importer) , [Catmandu::Store::DBI](https://metacpan.org/pod/Catmandu::Store::DBI)
+[Catmandu](https://metacpan.org/pod/Catmandu), [Catmandu::Importer](https://metacpan.org/pod/Catmandu%3A%3AImporter) , [Catmandu::Store::DBI](https://metacpan.org/pod/Catmandu%3A%3AStore%3A%3ADBI)
