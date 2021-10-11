@@ -1,6 +1,7 @@
 Revision history for Catmandu-DBI
 
 {{$NEXT}}
+  - auto reconnect
 
 0.09  2019-06-05 11:39:38 CEST
   - lazily create tables
