@@ -5,7 +5,7 @@ use Moo;
 use Catmandu::Store::DBI::Iterator;
 use namespace::clean;
 
-our $VERSION = "0.10.1";
+our $VERSION = "0.11";
 
 my $default_mapping = {
     _id => {
