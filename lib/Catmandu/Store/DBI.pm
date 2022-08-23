@@ -9,7 +9,7 @@ use MooX::Aliases;
 use Catmandu::Error;
 use namespace::clean;
 
-our $VERSION = "0.11";
+our $VERSION = "0.12";
 
 with 'Catmandu::Store';
 with 'Catmandu::Transactional';
