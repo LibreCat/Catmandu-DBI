@@ -43,7 +43,7 @@ sub generator {
     sub {
         state $rows;
 
-        return if defined $total && !$total;
+        return if defined $total && $total <= 0;
 
         unless (defined $rows && @$rows) {
             my $dbh = $store->dbh;
@@ -55,6 +55,8 @@ sub generator {
                 or Catmandu::Error->throw($dbh->errstr);
             $sth->execute(@$binds) or Catmandu::Error->throw($sth->errstr);
             $rows = $sth->fetchall_arrayref({});
+            # less results than requested: the end is near
+            $total = scalar(@$rows) if scalar(@$rows) < $limit;
             $sth->finish;
             $start += $limit;
         }
