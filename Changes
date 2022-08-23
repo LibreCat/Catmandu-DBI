@@ -1,6 +1,7 @@
 Revision history for Catmandu-DBI
 
 {{$NEXT}}
+  - optimize bag generator by reducing number of queries by 1
 
 0.11  2021-10-13 12:04:11 CEST
   - bump version
