@@ -1,6 +1,8 @@
 Revision history for Catmandu-DBI
 
 {{$NEXT}}
+
+0.13  2024-03-20 16:40:53 CET
   - create indexes in the current schema
 
 0.12  2022-08-23 11:19:52 CEST
