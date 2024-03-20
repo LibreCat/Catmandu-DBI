@@ -54,6 +54,15 @@ Vitali Peil `<vitali.peil at uni-bielefeld.de>`
 
 Nicolas Steenlant `<nicolas.steenlant at ugent.be>`
 
+# COPYRIGHT
+
+Copyright 2024 - Nicolas Franck, Patrick Hochstenbach, Vitali Peil, Nicolas Steenlant
+
+# LICENSE
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
 # SEE ALSO
 
 [Catmandu](https://metacpan.org/pod/Catmandu), [Catmandu::Importer](https://metacpan.org/pod/Catmandu%3A%3AImporter) , [Catmandu::Store::DBI](https://metacpan.org/pod/Catmandu%3A%3AStore%3A%3ADBI)

@@ -58,6 +58,15 @@ Vitali Peil C<< <vitali.peil at uni-bielefeld.de> >>
 
 Nicolas Steenlant C<< <nicolas.steenlant at ugent.be> >>
 
+=head1 COPYRIGHT
+
+Copyright 2024 - Nicolas Franck, Patrick Hochstenbach, Vitali Peil, Nicolas Steenlant
+
+=head1 LICENSE
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
 =head1 SEE ALSO
 
 L<Catmandu>, L<Catmandu::Importer> , L<Catmandu::Store::DBI>
