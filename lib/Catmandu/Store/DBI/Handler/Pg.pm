@@ -66,10 +66,10 @@ IF NOT EXISTS (
     FROM   pg_class c
     JOIN   pg_namespace n ON n.oid = c.relnamespace
     WHERE  c.relname = '${name}_${col}_idx'
-    AND    n.nspname = 'public'
+    AND    n.nspname = (SELECT CURRENT_SCHEMA)
     ) THEN
 
-    CREATE INDEX ${name}_${col}_idx ON public.${name} (${q_col});
+    CREATE INDEX ${name}_${col}_idx ON ${name} (${q_col});
 END IF;
 
 END\$\$;
