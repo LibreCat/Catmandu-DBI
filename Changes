@@ -1,6 +1,7 @@
 Revision history for Catmandu-DBI
 
 {{$NEXT}}
+  - create indexes in the current schema
 
 0.12  2022-08-23 11:19:52 CEST
   - optimize bag generator by reducing number of queries by 1
