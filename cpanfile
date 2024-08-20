@@ -13,3 +13,15 @@ on 'test', sub {
     requires 'Test::Exception','0';
     requires 'Test::More','0';
 };
+
+feature 'sqlite', 'SQLite support' => sub {
+  recommends 'DBD::SQLite';
+};
+
+feature 'mysql', 'Mysql support' => sub {
+  recommends 'DBD::mysql';
+};
+
+feature 'postgres', 'Postgres support' => sub {
+  recommends 'DBD::Pg';
+};

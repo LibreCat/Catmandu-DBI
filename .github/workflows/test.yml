@@ -1,0 +1,54 @@
+name: test
+on: [push, pull_request]
+jobs:
+  container-job:
+    runs-on: ubuntu-latest
+    container: node:16-bullseye
+
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        perl:
+          [
+            "5.38",
+            "5.36",
+            "5.34",
+            "5.32",
+            "5.30",
+            "5.22",
+          ]
+    name: Perl ${{ matrix.perl }}
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DATABASE: catmandu_dbi
+          POSTGRES_USER: catmandu_dbi
+          POSTGRES_PASSWORD: catmandu_dbi
+          # see section on PGDATA in https://hub.docker.com/_/postgres
+          PGDATA: /var/lib/postgresql/data/pgdata
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl }}      
+      - name: Install dependencies
+        run: cpanm -nq --installdeps --with-develop --with-recommends --with-all-features .
+      - name: Run test
+        shell: bash
+        run: |
+          export CATMANDU_DBI_TEST_PG_DSN="dbi:Pg:dbname=catmandu_dbi;host=postgres"
+          export CATMANDU_DBI_TEST_PG_USERNAME=catmandu_dbi
+          export CATMANDU_DBI_TEST_PG_PASSWORD=catmandu_dbi
+          prove -lr t
