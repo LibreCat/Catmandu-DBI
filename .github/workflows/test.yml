@@ -24,6 +24,7 @@ jobs:
           POSTGRES_PASSWORD: catmandu_dbi
           # see section on PGDATA in https://hub.docker.com/_/postgres
           PGDATA: /var/lib/postgresql/data/pgdata
+          PGPORT: 5432
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
