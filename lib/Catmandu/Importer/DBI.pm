@@ -21,7 +21,7 @@ has sth =>
 
 sub _build_dbh {
     my $self = $_[0];
-    DBI->connect(
+    my $dbh = DBI->connect(
         $self->dsn,
         $self->user,
         $self->password,
@@ -34,13 +34,14 @@ sub _build_dbh {
             sqlite_use_immediate_transaction => 1,
             sqlite_unicode                   => 1,
         }
-    );
+    ) or die($DBI::errstr);
+    $dbh;
 }
 
 sub _build_sth {
     my $self = $_[0];
-    my $sth  = $self->dbh->prepare($self->query);
-    $sth->execute;
+    my $sth  = $self->dbh->prepare($self->query) or die($self->dbh->errstr);
+    $sth->execute or die($sth->errstr);
     $sth;
 }
 
