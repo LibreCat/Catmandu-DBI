@@ -1,26 +1,30 @@
 package Catmandu::Importer::DBI;
 
 use Catmandu::Sane;
+use Catmandu::Error;
 use DBI;
 use Moo;
 use MooX::Aliases;
+use Types::Standard qw(Str);
+use Types::Common::String qw(NonEmptyStr);
 use namespace::clean;
+use feature qw(signatures);
+no warnings qw(experimental::signatures);
 
 our $VERSION = '0.13';
 
 with 'Catmandu::Importer';
 
-has data_source => (is => 'ro', required => 1, alias => 'dsn');
-has username    => (is => 'ro', alias    => 'user');
-has password    => (is => 'ro', alias    => 'pass');
-has query       => (is => 'ro', required => 1);
+has data_source => (is => 'ro', isa => NonEmptyStr, required => 1, alias => 'dsn');
+has username    => (is => 'ro', isa => Str, alias    => 'user');
+has password    => (is => 'ro', isa => Str, alias    => 'pass');
+has query       => (is => 'ro', isa => NonEmptyStr, required => 1);
 has dbh =>
     (is => 'ro', init_arg => undef, lazy => 1, builder => '_build_dbh',);
 has sth =>
     (is => 'ro', init_arg => undef, lazy => 1, builder => '_build_sth',);
 
-sub _build_dbh {
-    my $self = $_[0];
+sub _build_dbh ($self) {
     my $dbh = DBI->connect(
         $self->dsn,
         $self->user,
@@ -34,27 +38,23 @@ sub _build_dbh {
             sqlite_use_immediate_transaction => 1,
             sqlite_unicode                   => 1,
         }
-    ) or die($DBI::errstr);
+    ) or Catmandu::Error->throw($DBI::errstr);
     $dbh;
 }
 
-sub _build_sth {
-    my $self = $_[0];
-    my $sth  = $self->dbh->prepare($self->query) or die($self->dbh->errstr);
-    $sth->execute or die($sth->errstr);
+sub _build_sth ($self) {
+    my $sth  = $self->dbh->prepare($self->query) or Catmandu::Error->throw($self->dbh->errstr);
+    $sth->execute or Catmandu::Error->throw($sth->errstr);
     $sth;
 }
 
-sub generator {
-    my ($self) = @_;
-
-    return sub {
+sub generator ($self) {
+    sub {
         $self->sth->fetchrow_hashref();
-    }
+    };
 }
 
-sub DESTROY {
-    my ($self) = @_;
+sub DESTROY ($self) {
     $self->sth->finish;
     $self->dbh->disconnect;
 }

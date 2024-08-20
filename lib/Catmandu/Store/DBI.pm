@@ -7,7 +7,11 @@ use Catmandu::Store::DBI::Bag;
 use Moo;
 use MooX::Aliases;
 use Catmandu::Error;
+use Types::Standard qw(Str);
+use Types::Common::String qw(NonEmptyStr);
 use namespace::clean;
+use feature qw(signatures);
+no warnings qw(experimental::signatures);
 
 our $VERSION = "0.13";
 
@@ -16,6 +20,7 @@ with 'Catmandu::Transactional';
 
 has data_source => (
     is       => 'ro',
+    isa      => NonEmptyStr,
     required => 1,
     alias    => 'dsn',
     trigger  => sub {
@@ -24,12 +29,12 @@ has data_source => (
         $_[0]->{data_source} = $ds;
     },
 );
-has username => (is => 'ro', default => sub {''}, alias => 'user');
-has password => (is => 'ro', default => sub {''}, alias => 'pass');
-has default_order           => (is => 'ro', default => sub {'ID'});
+has username => (is => 'ro', isa => Str, default => sub {''}, alias => 'user');
+has password => (is => 'ro', isa => Str, default => sub {''}, alias => 'pass');
+has default_order           => (is => 'ro', isa => Str, default => sub {'ID'});
 has handler                 => (is => 'lazy');
-has _in_transaction         => (is => 'rw', writer => '_set_in_transaction',);
-has _dbh => (is => 'lazy', builder => '_build_dbh', writer => '_set_dbh',);
+has _in_transaction         => (is => 'rw', writer => '_set_in_transaction', init_arg => undef);
+has _dbh => (is => 'lazy', builder => '_build_dbh', writer => '_set_dbh', init_arg => undef);
 
 # DEPRECATED methods. Were only invented to tackle of problem of reconnection
 sub timeout {
@@ -49,8 +54,7 @@ sub handler_namespace {
     'Catmandu::Store::DBI::Handler';
 }
 
-sub _build_handler {
-    my ($self) = @_;
+sub _build_handler ($self) {
     my $driver = $self->dbh->{Driver}{Name} // '';
     my $ns     = $self->handler_namespace;
     my $pkg;
@@ -70,8 +74,7 @@ sub _build_handler {
     require_package($pkg, $ns)->new;
 }
 
-sub _build_dbh {
-    my ($self) = @_;
+sub _build_dbh ($self) {
     my $opts = {
         AutoCommit                       => 1,
         RaiseError                       => 1,
@@ -83,13 +86,11 @@ sub _build_dbh {
     };
     my $dbh
         = DBI->connect($self->data_source, $self->username, $self->password,
-        $opts,);
+        $opts,) or Catmandu::Error->throw($DBI::errstr);
     $dbh;
 }
 
-sub dbh {
-
-    my $self = $_[0];
+sub dbh ($self) {
     my $dbh  = $self->_dbh;
 
     # reconnect when dbh is not set (should never happen)
@@ -118,9 +119,8 @@ sub dbh {
 
 }
 
-sub reconnect {
+sub reconnect ($self) {
 
-    my $self = $_[0];
     my $dbh  = $self->_dbh;
     $dbh->disconnect if defined($dbh);
     $self->_set_dbh($self->_build_dbh);
@@ -128,8 +128,7 @@ sub reconnect {
 
 }
 
-sub transaction {
-    my ($self, $sub) = @_;
+sub transaction ($self, $sub) {
 
     if ($self->_in_transaction) {
         return $sub->();
@@ -155,8 +154,7 @@ sub transaction {
     @res;
 }
 
-sub DEMOLISH {
-    my ($self) = @_;
+sub DEMOLISH ($self) {
     $self->{_dbh}->disconnect if $self->{_dbh};
 }
 
