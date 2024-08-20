@@ -154,7 +154,7 @@ sub transaction ($self, $sub) {
     @res;
 }
 
-sub DEMOLISH ($self) {
+sub DEMOLISH ($self, $in_global_destruction) {
     $self->{_dbh}->disconnect if $self->{_dbh};
 }
 
