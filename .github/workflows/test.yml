@@ -48,5 +48,6 @@ jobs:
           export CATMANDU_DBI_TEST_PG_USERNAME=catmandu_dbi
           export CATMANDU_DBI_TEST_PG_PASSWORD=catmandu_dbi
           echo "dns: $CATMANDU_DBI_TEST_PG_DSN"
+          curl -v "http://localhost:5432"
           curl -v "http://postgres:5432"
           prove -lr t
