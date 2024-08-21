@@ -16,6 +16,22 @@ jobs:
           ]
     name: Perl ${{ matrix.perl }}
     services:
+      mysql:
+        image: yobasystems/alpine-mariadb
+        env:
+          MYSQL_DATABASE: catmandu_dbi
+          MYSQL_USER: catmandu_dbi
+          MYSQL_PASSWORD: catmandu_dbi
+          MYSQL_ROOT_PASSWORD: mysql
+          MYSQL_CHARSET: utf8
+          MYSQL_COLLATION: utf8_general_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd mysqladmin ping -h localhost -p mysql
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
       postgres:
         image: postgres:16-alpine
         env:
@@ -47,4 +63,7 @@ jobs:
           export CATMANDU_DBI_TEST_PG_DSN="dbi:Pg:dbname=catmandu_dbi;host=localhost"
           export CATMANDU_DBI_TEST_PG_USERNAME=catmandu_dbi
           export CATMANDU_DBI_TEST_PG_PASSWORD=catmandu_dbi
+          export CATMANDU_DBI_TEST_MYSQL_DSN="dbi:mysql:database=catmandu_dbi;host=localhost"
+          export CATMANDU_DBI_TEST_MYSQL_USERNAME=catmandu_dbi
+          export CATMANDU_DBI_TEST_MYSQL_PASSWORD=catmandu_dbi
           prove -lr t
