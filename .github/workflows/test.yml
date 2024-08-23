@@ -46,7 +46,7 @@ jobs:
       - name: Setup mysql
         run: |
           sudo /etc/init.d/mysql start
-          mysql -e 'CREATE DATABASE ${{ env.MYSQL_DATABASE }};' -u${{ env.MYSQL_USER }} -p${{ env.MYSQL_PASSWORD }}
+          mysql -e 'CREATE DATABASE ${{ env.MYSQL_DATABASE }};' -uroot -proot
       - name: Setup perl
         uses: shogo82148/actions-setup-perl@v1
         with:
