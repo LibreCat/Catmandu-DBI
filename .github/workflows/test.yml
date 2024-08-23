@@ -16,22 +16,6 @@ jobs:
           ]
     name: Perl ${{ matrix.perl }}
     services:
-      mysql:
-        image: yobasystems/alpine-mariadb
-        env:
-          MYSQL_DATABASE: catmandu_dbi
-          MYSQL_USER: catmandu_dbi
-          MYSQL_PASSWORD: catmandu_dbi
-          MYSQL_ROOT_PASSWORD: mysql
-          MYSQL_CHARSET: utf8
-          MYSQL_COLLATION: utf8_general_ci
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd "mysqladmin ping -h localhost -p mysql"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
       postgres:
         image: postgres:16-alpine
         env:
@@ -49,8 +33,20 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+    env:
+      MYSQL_DATABASE: catmandu_dbi
+      MYSQL_USER: catmandu_dbi
+      MYSQL_PASSWORD: catmandu_dbi
+      MYSQL_ROOT_PASSWORD: catmandu_dbi
+      MYSQL_CHARSET: utf8
+      MYSQL_COLLATION: utf8_general_ci
     steps:
       - uses: actions/checkout@v3
+      # mysql is preinstalled
+      - name: Setup mysql
+        run: |
+          sudo /etc/init.d/mysql start
+          mysql -e 'CREATE DATABASE ${{ env.MYSQL_DATABASE }};' -u${{ env.MYSQL_USER }} -p${{ env.MYSQL_PASSWORD }}
       - name: Setup perl
         uses: shogo82148/actions-setup-perl@v1
         with:
